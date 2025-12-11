@@ -48,8 +48,20 @@ const Api = {
      */
     getRequestDigest: async (siteUrl) => {
         const endpoint = `${siteUrl}/_api/contextinfo`;
-        const data = await Api.get(endpoint);
-        return data.d.GetContextWebInformation.FormDigestValue;
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json;odata=verbose"
+                }
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            return data.d.GetContextWebInformation.FormDigestValue;
+        } catch (error) {
+            console.error("API GetRequestDigest Error:", error);
+            throw error;
+        }
     },
 
     /**
