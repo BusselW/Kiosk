@@ -93,19 +93,30 @@ const Api = {
     },
 
     /**
+     * Get the ListItemEntityTypeFullName for a list
+     * This is crucial for avoiding 400 Bad Request errors on POST/PUT
+     */
+    getListItemEntityTypeFullName: async (listName) => {
+        const endpoint = `${Config.subSiteUrl}/_api/web/lists/getbytitle('${listName}')?$select=ListItemEntityTypeFullName`;
+        const data = await Api.get(endpoint);
+        return data.d.ListItemEntityTypeFullName;
+    },
+
+    /**
      * Add an item to the Kiosk List
      */
     addToKiosk: async (pageItem) => {
         const digest = await Api.getRequestDigest(Config.subSiteUrl);
+        const entityType = await Api.getListItemEntityTypeFullName(Config.kioskListName);
         const endpoint = `${Config.subSiteUrl}/_api/web/lists/getbytitle('${Config.kioskListName}')/items`;
         
         const payload = {
-            "__metadata": { "type": `SP.Data.${Config.kioskListName}ListItem` }, // Note: List type might need adjustment based on actual internal name
+            "__metadata": { "type": entityType },
             [Config.fields.kiosk.title]: pageItem.Title,
             [Config.fields.kiosk.pageUrl]: {
                 "__metadata": { "type": "SP.FieldUrlValue" },
                 "Description": pageItem.Title,
-                "Url": pageItem.FileRef // Note: FileRef is server relative, might need full URL depending on requirement
+                "Url": pageItem.FileRef 
             },
             [Config.fields.kiosk.status]: "Actief",
             [Config.fields.kiosk.originalId]: pageItem.Id,
@@ -120,10 +131,11 @@ const Api = {
      */
     updateKioskItemStatus: async (itemId, newStatus) => {
         const digest = await Api.getRequestDigest(Config.subSiteUrl);
+        const entityType = await Api.getListItemEntityTypeFullName(Config.kioskListName);
         const endpoint = `${Config.subSiteUrl}/_api/web/lists/getbytitle('${Config.kioskListName}')/items(${itemId})`;
         
         const payload = {
-            "__metadata": { "type": `SP.Data.${Config.kioskListName}ListItem` },
+            "__metadata": { "type": entityType },
             [Config.fields.kiosk.status]: newStatus
         };
 
