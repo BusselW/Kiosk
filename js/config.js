@@ -16,8 +16,8 @@ const Config = {
     fields: {
         kiosk: {
             title: "Title",
-            pageUrl: "PageUrl",
-            status: "Status",
+            pageUrl: "PageURL", // Updated from schema
+            status: "Status_x0009_", // Updated from schema
             originalId: "OriginalId",
             dateAdded: "DateAdded"
         },
