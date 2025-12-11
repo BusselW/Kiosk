@@ -73,18 +73,36 @@ const App = {
             await App.loadData(); // Reload to show update
             App.render();
         } catch (error) {
-            alert("Failed to add item: " + error.message);
+            alert("Fout bij toevoegen item: " + error.message);
         }
     },
 
-    toggleStatus: async (itemId, currentStatus) => {
-        const newStatus = currentStatus === 'Actief' ? 'Niet actief' : 'Actief';
+    activateItem: async (itemId) => {
         try {
-            await Api.updateKioskItemStatus(itemId, newStatus);
-            await App.loadData(); // Reload to show update
+            await Api.updateKioskItemStatus(itemId, 'Actief');
+            await App.loadData();
             App.render();
         } catch (error) {
-            alert("Failed to update status: " + error.message);
+            alert("Fout bij activeren: " + error.message);
+        }
+    },
+
+    deactivateItem: async (itemId) => {
+        const input = document.getElementById(`result-input-${itemId}`);
+        const resultText = input ? input.value : '';
+
+        if (!resultText) {
+            if(!confirm("Weet u zeker dat u dit item wilt deactiveren zonder resultaat in te vullen?")) {
+                return;
+            }
+        }
+
+        try {
+            await Api.updateKioskItemStatus(itemId, 'Niet actief', resultText);
+            await App.loadData();
+            App.render();
+        } catch (error) {
+            alert("Fout bij deactiveren: " + error.message);
         }
     }
 };

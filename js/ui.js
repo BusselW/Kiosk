@@ -5,13 +5,21 @@ const UI = {
         btnAdmin: document.getElementById('btn-view-admin')
     },
 
+    icons: {
+        add: '<svg viewBox="0 0 20 20"><path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"/></svg>',
+        check: '<svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>',
+        archive: '<svg viewBox="0 0 20 20"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/><path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>',
+        refresh: '<svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>',
+        link: '<svg viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>'
+    },
+
     init: () => {
         UI.elements.btnUser.addEventListener('click', () => App.switchView('user'));
         UI.elements.btnAdmin.addEventListener('click', () => App.switchView('admin'));
     },
 
     renderLoading: () => {
-        UI.elements.appContent.innerHTML = '<div id="loading">Loading data...</div>';
+        UI.elements.appContent.innerHTML = '<div id="loading">Gegevens laden...</div>';
     },
 
     renderAdminView: (recentPages, kioskItems) => {
@@ -21,7 +29,7 @@ const UI = {
         // Panel 1: Recent Site Pages
         const pagesPanel = document.createElement('div');
         pagesPanel.className = 'panel';
-        pagesPanel.innerHTML = `<h2>Recent Site Pages (Last ${Config.recentDaysThreshold} days)</h2>`;
+        pagesPanel.innerHTML = `<h2>${UI.icons.refresh} Recente Sitepagina's (Laatste ${Config.recentDaysThreshold} dagen)</h2>`;
         const pagesList = document.createElement('ul');
         pagesList.className = 'item-list';
 
@@ -35,44 +43,73 @@ const UI = {
                 const li = document.createElement('li');
                 li.className = 'item-entry';
                 li.innerHTML = `
-                    <div>
-                        <strong>${page.Title}</strong><br>
-                        <small>Created: ${new Date(page.Created).toLocaleDateString()}</small>
+                    <div class="item-content">
+                        <a href="${page.FileRef}" target="_blank" class="item-title">${page.Title}</a>
+                        <div class="item-meta">
+                            <span>Aangemaakt: ${new Date(page.Created).toLocaleDateString('nl-NL')}</span>
+                        </div>
                     </div>
-                    ${!isTracked ? `<button class="btn-action" onclick="App.addToKiosk(${page.Id})">Add to Kiosk</button>` : '<span>Tracked</span>'}
+                    ${!isTracked 
+                        ? `<button class="btn-action btn-primary" onclick="App.addToKiosk(${page.Id})">${UI.icons.add} Toevoegen</button>` 
+                        : `<span class="status-badge status-actief">${UI.icons.check} Gevolgd</span>`}
                 `;
                 pagesList.appendChild(li);
             });
         } else {
-            pagesList.innerHTML = '<li>No recent pages found (or failed to load).</li>';
+            pagesList.innerHTML = '<li>Geen recente pagina\'s gevonden (of laden mislukt).</li>';
         }
         pagesPanel.appendChild(pagesList);
 
         // Panel 2: Kiosk List Management
         const kioskPanel = document.createElement('div');
         kioskPanel.className = 'panel';
-        kioskPanel.innerHTML = `<h2>Kiosk Active Items</h2>`;
+        kioskPanel.innerHTML = `<h2>${UI.icons.check} Kiosk Actieve Items</h2>`;
         const kioskList = document.createElement('ul');
         kioskList.className = 'item-list';
 
         if (kioskItems && kioskItems.d && kioskItems.d.results) {
             kioskItems.d.results.forEach(item => {
                 const status = item[Config.fields.kiosk.status];
+                const isActive = status === 'Actief';
+                const result = item[Config.fields.kiosk.result] || '';
+                
                 const li = document.createElement('li');
                 li.className = 'item-entry';
-                li.innerHTML = `
-                    <div>
-                        <strong>${item.Title}</strong><br>
-                        <small>Status: ${status}</small>
+                
+                // Build the HTML
+                let html = `
+                    <div class="item-content">
+                        <div class="item-title">${item.Title}</div>
+                        <div class="item-meta">
+                            <span class="status-badge ${isActive ? 'status-actief' : 'status-niet-actief'}">
+                                ${isActive ? 'Actief' : 'Niet actief'}
+                            </span>
+                            ${!isActive && result ? `<span class="result-display">Resultaat: ${result}</span>` : ''}
+                        </div>
+                        
+                        <!-- Hidden input container for deactivation -->
+                        <div id="deactivate-form-${item.Id}" class="result-input-container">
+                            <textarea id="result-input-${item.Id}" placeholder="Vul het resultaat of de reden in..."></textarea>
+                            <div style="display:flex; gap:8px; justify-content:flex-end;">
+                                <button class="btn-action btn-secondary" onclick="UI.toggleDeactivateForm(${item.Id})">Annuleren</button>
+                                <button class="btn-action btn-danger" onclick="App.deactivateItem(${item.Id})">Bevestigen</button>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn-action" onclick="App.toggleStatus(${item.Id}, '${status}')">
-                        ${status === 'Actief' ? 'Deactivate' : 'Activate'}
-                    </button>
+                    
+                    <div class="item-actions">
+                        ${isActive 
+                            ? `<button class="btn-action btn-danger" onclick="UI.toggleDeactivateForm(${item.Id})">${UI.icons.archive} Deactiveren</button>` 
+                            : `<button class="btn-action btn-success" onclick="App.activateItem(${item.Id})">${UI.icons.check} Activeren</button>`
+                        }
+                    </div>
                 `;
+                
+                li.innerHTML = html;
                 kioskList.appendChild(li);
             });
         } else {
-            kioskList.innerHTML = '<li>No items in Kiosk list (or list not found).</li>';
+            kioskList.innerHTML = '<li>Geen items in Kiosk lijst (of lijst niet gevonden).</li>';
         }
         kioskPanel.appendChild(kioskList);
 
@@ -84,35 +121,45 @@ const UI = {
     },
 
     renderUserView: (kioskItems) => {
-        // Placeholder for User View
         const container = document.createElement('div');
-        container.className = 'user-view';
-        container.innerHTML = '<h2>Active Kiosk Items</h2>';
+        container.className = 'user-view-grid';
         
-        const list = document.createElement('ul');
-        list.className = 'item-list';
-
         if (kioskItems && kioskItems.d && kioskItems.d.results) {
             const activeItems = kioskItems.d.results.filter(item => item[Config.fields.kiosk.status] === 'Actief');
             
             if(activeItems.length > 0) {
                 activeItems.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'item-entry';
-                    // Assuming PageUrl is a URL field object
                     const url = item[Config.fields.kiosk.pageUrl] ? item[Config.fields.kiosk.pageUrl].Url : '#';
-                    li.innerHTML = `
-                        <a href="${url}" target="_blank"><strong>${item.Title}</strong></a>
+                    
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.innerHTML = `
+                        <h3>${item.Title}</h3>
+                        <p>Klik hieronder om naar de pagina te gaan.</p>
+                        <div class="card-footer">
+                            <a href="${url}" target="_blank" class="btn-action btn-primary">
+                                ${UI.icons.link} Open Pagina
+                            </a>
+                        </div>
                     `;
-                    list.appendChild(li);
+                    container.appendChild(card);
                 });
             } else {
-                list.innerHTML = '<li>No active items to display.</li>';
+                container.innerHTML = '<p>Geen actieve items om weer te geven.</p>';
             }
         }
-        container.appendChild(list);
-        
         UI.elements.appContent.innerHTML = '';
         UI.elements.appContent.appendChild(container);
+    },
+
+    toggleDeactivateForm: (id) => {
+        const form = document.getElementById(`deactivate-form-${id}`);
+        if (form) {
+            form.classList.toggle('visible');
+            if (form.classList.contains('visible')) {
+                const input = document.getElementById(`result-input-${id}`);
+                if(input) input.focus();
+            }
+        }
     }
 };

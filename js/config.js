@@ -19,7 +19,8 @@ const Config = {
             pageUrl: "PageURL", // Updated from schema
             status: "Status_x0009_", // Updated from schema
             originalId: "OriginalId",
-            dateAdded: "DateAdded"
+            dateAdded: "DateAdded",
+            result: "Resultaat"
         },
         sitePages: {
             id: "ID",

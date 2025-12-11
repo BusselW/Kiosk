@@ -129,7 +129,7 @@ const Api = {
     /**
      * Update status of a Kiosk item
      */
-    updateKioskItemStatus: async (itemId, newStatus) => {
+    updateKioskItemStatus: async (itemId, newStatus, resultText = null) => {
         const digest = await Api.getRequestDigest(Config.subSiteUrl);
         const entityType = await Api.getListItemEntityTypeFullName(Config.kioskListName);
         const endpoint = `${Config.subSiteUrl}/_api/web/lists/getbytitle('${Config.kioskListName}')/items(${itemId})`;
@@ -138,6 +138,11 @@ const Api = {
             "__metadata": { "type": entityType },
             [Config.fields.kiosk.status]: newStatus
         };
+
+        // If a result text is provided (when deactivating), add it to payload
+        if (resultText !== null) {
+            payload[Config.fields.kiosk.result] = resultText;
+        }
 
         // For updates we usually need MERGE or PATCH, but standard POST with X-HTTP-Method header works in SP
         // Adding headers for update
