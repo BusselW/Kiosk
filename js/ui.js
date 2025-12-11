@@ -27,8 +27,10 @@ const UI = {
 
         if (recentPages && recentPages.d && recentPages.d.results) {
             recentPages.d.results.forEach(page => {
-                // Check if already in Kiosk
-                const isTracked = kioskItems.d.results.some(k => k[Config.fields.kiosk.originalId] === page.Id);
+                // Check if already in Kiosk (safely)
+                const isTracked = kioskItems && kioskItems.d && kioskItems.d.results 
+                    ? kioskItems.d.results.some(k => k[Config.fields.kiosk.originalId] === page.Id)
+                    : false;
                 
                 const li = document.createElement('li');
                 li.className = 'item-entry';
@@ -42,7 +44,7 @@ const UI = {
                 pagesList.appendChild(li);
             });
         } else {
-            pagesList.innerHTML = '<li>No recent pages found.</li>';
+            pagesList.innerHTML = '<li>No recent pages found (or failed to load).</li>';
         }
         pagesPanel.appendChild(pagesList);
 
@@ -70,7 +72,7 @@ const UI = {
                 kioskList.appendChild(li);
             });
         } else {
-            kioskList.innerHTML = '<li>No items in Kiosk list.</li>';
+            kioskList.innerHTML = '<li>No items in Kiosk list (or list not found).</li>';
         }
         kioskPanel.appendChild(kioskList);
 

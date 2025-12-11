@@ -4,8 +4,10 @@ const Config = {
     subSiteUrl: "https://som.org.om.local/sites/muldert/onderdelen/beoordelen/verkeersborden",
     
     // List Names
+    // Note: In Dutch environments, 'SitePages' is often 'Sitepagina\'s'. 
+    // If you get a 404 on SitePages, try changing this to "Sitepagina's"
+    sitePagesLibrary: "Sitepagina's", 
     kioskListName: "KioskLijst",
-    sitePagesLibrary: "SitePages",
 
     // Settings
     recentDaysThreshold: 14, // 2 weeks

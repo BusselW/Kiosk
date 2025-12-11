@@ -14,16 +14,33 @@ const App = {
 
     loadData: async () => {
         UI.renderLoading();
+        
+        // Helper to handle individual promise failures
+        const fetchSafe = async (promise, name) => {
+            try {
+                return await promise;
+            } catch (e) {
+                console.warn(`Failed to load ${name}:`, e);
+                return null;
+            }
+        };
+
         try {
-            // Fetch data in parallel
+            // Fetch data in parallel but handle errors individually
             const [pages, items] = await Promise.all([
-                Api.getRecentSitePages(),
-                Api.getKioskItems()
+                fetchSafe(Api.getRecentSitePages(), 'SitePages'),
+                fetchSafe(Api.getKioskItems(), 'KioskItems')
             ]);
             
-            App.state.recentPages = pages;
-            App.state.kioskItems = items;
+            if (pages) App.state.recentPages = pages;
+            if (items) App.state.kioskItems = items;
+            
             console.log("Data loaded", App.state);
+            
+            // If both failed, show error
+            if (!pages && !items) {
+                throw new Error("Could not load any data. Please check List names and URLs in config.js");
+            }
         } catch (error) {
             console.error("Error loading data", error);
             document.getElementById('app-content').innerHTML = `<p class="error">Error loading data: ${error.message}</p>`;
