@@ -65,7 +65,9 @@ const Api = {
         const filter = `PromotedState eq 2 and Created ge datetime'${dateString}'`;
         const select = `${Config.fields.sitePages.id},${Config.fields.sitePages.title},${Config.fields.sitePages.created},${Config.fields.sitePages.fileRef}`;
         
-        const endpoint = `${Config.subSiteUrl}/_api/web/lists/getbytitle('${Config.sitePagesLibrary}')/items?$filter=${filter}&$select=${select}&$orderby=Created desc`;
+        // Escape single quotes in library name for OData query
+        const libraryTitle = Config.sitePagesLibrary.replace(/'/g, "''");
+        const endpoint = `${Config.subSiteUrl}/_api/web/lists/getbytitle('${libraryTitle}')/items?$filter=${filter}&$select=${select}&$orderby=Created desc`;
         
         return await Api.get(endpoint);
     },
