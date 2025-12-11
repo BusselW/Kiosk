@@ -64,12 +64,111 @@ nav button svg {
     fill: currentColor;
 }
 
-/* Grid for Admin View */
-.admin-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #edebe9;
+    margin-bottom: 20px;
 }
+
+.tab-btn {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: #605e5c;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    color: #0078d4;
+    background-color: #f3f2f1;
+}
+
+.tab-btn.active {
+    color: #0078d4;
+    border-bottom-color: #0078d4;
+}
+
+/* Compact User List */
+.compact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.compact-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f3f2f1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.1s;
+    position: relative; /* For tooltip positioning */
+}
+
+.compact-item:hover {
+    background-color: #faf9f8;
+}
+
+.compact-item a {
+    text-decoration: none;
+    color: #323130;
+    font-size: 14px;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.compact-item a:hover {
+    color: #0078d4;
+    text-decoration: underline;
+}
+
+/* Tooltip for Result */
+.tooltip-trigger {
+    cursor: help;
+}
+
+.tooltip-content {
+    visibility: hidden;
+    background-color: #323130;
+    color: #fff;
+    text-align: center;
+    border-radius: 4px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 100%;
+    right: 0;
+    width: 250px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    box-shadow: 0 3.2px 7.2px 0 rgba(0,0,0,0.132);
+    white-space: normal;
+}
+
+.compact-item:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Admin Button in Header */
+#btn-view-admin {
+    display: none; /* Hidden by default */
+}
+
+#btn-view-admin.visible {
+    display: inline-flex;
+}
+
 
 .panel {
     background: #fff;

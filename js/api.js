@@ -65,6 +65,53 @@ const Api = {
     },
 
     /**
+     * Check if current user is in a specific group
+     */
+    isUserInGroup: async (groupName, userId = null) => {
+        try {
+            if (!userId) {
+                if (typeof _spPageContextInfo !== 'undefined') {
+                    userId = _spPageContextInfo.userId;
+                } else {
+                    const user = await Api.get(`${Config.siteUrl}/_api/web/currentuser`);
+                    userId = user.d.Id;
+                }
+            }
+
+            const groupEndpoint = `${Config.siteUrl}/_api/web/sitegroups/getbyname('${groupName}')/users?$filter=Id eq ${userId}`;
+            const data = await Api.get(groupEndpoint);
+            return data.d.results.length > 0;
+        } catch (error) {
+            console.warn(`Group check failed for '${groupName}':`, error);
+            return false;
+        }
+    },
+
+    /**
+     * Check if user is in ANY of the provided groups
+     */
+    isUserInAnyGroup: async (groupNames) => {
+        // Get user ID once
+        let userId = null;
+        try {
+            if (typeof _spPageContextInfo !== 'undefined') {
+                userId = _spPageContextInfo.userId;
+            } else {
+                const user = await Api.get(`${Config.siteUrl}/_api/web/currentuser`);
+                userId = user.d.Id;
+            }
+        } catch (e) {
+            console.error("Could not get current user ID", e);
+            return false;
+        }
+
+        // Check all groups in parallel
+        const checks = groupNames.map(group => Api.isUserInGroup(group, userId));
+        const results = await Promise.all(checks);
+        return results.some(isMember => isMember === true);
+    },
+
+    /**
      * Fetch recent Site Pages from the subsite
      */
     getRecentSitePages: async () => {

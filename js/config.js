@@ -11,6 +11,11 @@ const Config = {
 
     // Settings
     recentDaysThreshold: 14, // 2 weeks
+    adminGroups: [
+        "1. Sharepoint beheer",
+        "1.1. Mulder MT",
+        "2.3. Senioren beoordelen"
+    ],
     
     // Field Names (Internal Names)
     fields: {

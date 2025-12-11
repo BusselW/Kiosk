@@ -14,12 +14,31 @@ const UI = {
     },
 
     init: () => {
-        UI.elements.btnUser.addEventListener('click', () => App.switchView('user'));
-        UI.elements.btnAdmin.addEventListener('click', () => App.switchView('admin'));
+        // Only User View button is needed initially if we treat them as separate "pages"
+        // But keeping the switch logic for the single-page app feel
+        const btnAdmin = UI.elements.btnAdmin;
+        if(btnAdmin) btnAdmin.addEventListener('click', () => App.switchView('admin'));
+        
+        const btnUser = UI.elements.btnUser;
+        if(btnUser) btnUser.addEventListener('click', () => App.switchView('user'));
+    },
+
+    showAdminButton: () => {
+        UI.elements.btnAdmin.classList.add('visible');
     },
 
     renderLoading: () => {
         UI.elements.appContent.innerHTML = '<div id="loading">Gegevens laden...</div>';
+    },
+
+    renderTabs: (activeTab) => {
+        return `
+            <div class="tabs">
+                <button class="tab-btn ${activeTab === 'Actief' ? 'active' : ''}" onclick="App.switchUserTab('Actief')">Actief</button>
+                <button class="tab-btn ${activeTab === 'Niet actief' ? 'active' : ''}" onclick="App.switchUserTab('Niet actief')">Niet actief</button>
+                <button class="tab-btn ${activeTab === 'All' ? 'active' : ''}" onclick="App.switchUserTab('All')">Alles</button>
+            </div>
+        `;
     },
 
     renderAdminView: (recentPages, kioskItems) => {
@@ -120,34 +139,51 @@ const UI = {
         UI.elements.appContent.appendChild(container);
     },
 
-    renderUserView: (kioskItems) => {
+    renderUserView: (kioskItems, activeTab = 'Actief') => {
         const container = document.createElement('div');
-        container.className = 'user-view-grid';
+        container.className = 'user-view-container';
         
+        // Add Tabs
+        container.innerHTML = UI.renderTabs(activeTab);
+
+        const list = document.createElement('ul');
+        list.className = 'compact-list';
+
         if (kioskItems && kioskItems.d && kioskItems.d.results) {
-            const activeItems = kioskItems.d.results.filter(item => item[Config.fields.kiosk.status] === 'Actief');
+            // Filter based on tab
+            const filteredItems = kioskItems.d.results.filter(item => {
+                if (activeTab === 'All') return true;
+                return item[Config.fields.kiosk.status] === activeTab;
+            });
             
-            if(activeItems.length > 0) {
-                activeItems.forEach(item => {
+            if(filteredItems.length > 0) {
+                filteredItems.forEach(item => {
                     const url = item[Config.fields.kiosk.pageUrl] ? item[Config.fields.kiosk.pageUrl].Url : '#';
+                    const status = item[Config.fields.kiosk.status];
+                    const result = item[Config.fields.kiosk.result];
+                    const isInactive = status === 'Niet actief';
+
+                    const li = document.createElement('li');
+                    li.className = 'compact-item';
                     
-                    const card = document.createElement('div');
-                    card.className = 'user-card';
-                    card.innerHTML = `
-                        <h3>${item.Title}</h3>
-                        <p>Klik hieronder om naar de pagina te gaan.</p>
-                        <div class="card-footer">
-                            <a href="${url}" target="_blank" class="btn-action btn-primary">
-                                ${UI.icons.link} Open Pagina
-                            </a>
-                        </div>
+                    let tooltipHtml = '';
+                    if (isInactive && result) {
+                        tooltipHtml = `<div class="tooltip-content">${result}</div>`;
+                    }
+
+                    li.innerHTML = `
+                        <a href="${url}" target="_blank">${item.Title}</a>
+                        ${isInactive ? `<span class="status-badge status-niet-actief" style="font-size:10px;">Gearchiveerd</span>` : ''}
+                        ${tooltipHtml}
                     `;
-                    container.appendChild(card);
+                    list.appendChild(li);
                 });
             } else {
-                container.innerHTML = '<p>Geen actieve items om weer te geven.</p>';
+                list.innerHTML = '<li class="compact-item" style="color:#605e5c; font-style:italic;">Geen items gevonden in deze weergave.</li>';
             }
         }
+        container.appendChild(list);
+        
         UI.elements.appContent.innerHTML = '';
         UI.elements.appContent.appendChild(container);
     },

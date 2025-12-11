@@ -1,13 +1,22 @@
 const App = {
     state: {
-        currentView: 'admin', // 'admin' or 'user'
+        currentView: 'user', // Default to user view
+        userTab: 'Actief', // 'Actief', 'Niet actief', 'All'
         recentPages: [],
-        kioskItems: []
+        kioskItems: [],
+        isAdmin: false
     },
 
     init: async () => {
         console.log("Initializing Kiosk App...");
         UI.init();
+        
+        // Check permissions first
+        App.state.isAdmin = await Api.isUserInAnyGroup(Config.adminGroups);
+        if (App.state.isAdmin) {
+            UI.showAdminButton();
+        }
+
         await App.loadData();
         App.render();
     },
@@ -49,17 +58,31 @@ const App = {
 
     render: () => {
         if (App.state.currentView === 'admin') {
+            if (!App.state.isAdmin) {
+                App.switchView('user'); // Security fallback
+                return;
+            }
             UI.renderAdminView(App.state.recentPages, App.state.kioskItems);
         } else {
-            UI.renderUserView(App.state.kioskItems);
+            UI.renderUserView(App.state.kioskItems, App.state.userTab);
         }
     },
 
     switchView: (viewName) => {
         App.state.currentView = viewName;
-        // Update buttons
-        document.getElementById('btn-view-user').className = viewName === 'user' ? 'active' : '';
-        document.getElementById('btn-view-admin').className = viewName === 'admin' ? 'active' : '';
+        
+        // Update header buttons
+        const btnUser = document.getElementById('btn-view-user');
+        const btnAdmin = document.getElementById('btn-view-admin');
+        
+        if(btnUser) btnUser.className = viewName === 'user' ? 'active' : '';
+        if(btnAdmin) btnAdmin.className = viewName === 'admin' ? 'active' : '';
+        
+        App.render();
+    },
+
+    switchUserTab: (tabName) => {
+        App.state.userTab = tabName;
         App.render();
     },
 
