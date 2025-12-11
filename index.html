@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosk Widget</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- SharePoint dependencies (if running inside SP, these might be present, but for standalone we might need polyfills or specific loading strategies) -->
+</head>
+<body>
+    <div id="kiosk-app">
+        <header>
+            <h1>Kiosk Beheer</h1>
+            <nav>
+                <button id="btn-view-user" class="active">User View</button>
+                <button id="btn-view-admin">Admin View</button>
+            </nav>
+        </header>
+
+        <main id="app-content">
+            <!-- Content will be injected here -->
+            <div id="loading">Loading...</div>
+        </main>
+    </div>
+
+    <!-- Modular Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
